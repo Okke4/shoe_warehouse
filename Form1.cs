@@ -89,7 +89,7 @@ namespace WindowsFormsApp1
             try
             {
                 db.openConnection();
-                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT * FROM product", db.getConnection());
+                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT id, product_name AS Название, price AS Цена, storage_rack AS Стеллаж, cell AS Ячейка FROM product", db.getConnection());
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
                 dataGridView1.DataSource = dt;
@@ -106,7 +106,7 @@ namespace WindowsFormsApp1
             try
             {
                 db.openConnection();
-                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT * FROM customers", db.getConnection());
+                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT id, surname AS Фамилия, name AS Имя, lastname AS Отчество, TIN AS УПН FROM customers", db.getConnection());
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
                 dataGridView2.DataSource = dt;
@@ -123,7 +123,7 @@ namespace WindowsFormsApp1
             try
             {
                 db.openConnection();
-                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT id, customer, time_start, time_lost, paid FROM invoice", db.getConnection());
+                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT id, customer AS Покупатель, time_start AS `Открытие счета`, time_lost AS `Закрытие счета`, paid AS Оплачен FROM invoice", db.getConnection());
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
                 dataGridView4.DataSource = dt;
@@ -140,7 +140,7 @@ namespace WindowsFormsApp1
             try
             {
                 db.openConnection();
-                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT id, customer, time FROM waybill", db.getConnection());
+                MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT id, customer AS Покупатель, time AS Дата FROM waybill", db.getConnection());
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
                 dataGridView5.DataSource = dt;
@@ -200,13 +200,16 @@ namespace WindowsFormsApp1
 
         private void button12_Click(object sender, EventArgs e) //удаление товара
         {
-            int product_id = Convert.ToInt32(dataGridView1[0, dataGridView1.CurrentRow.Index].Value.ToString());
-            db.openConnection();
-            MySqlDataAdapter adapter = new MySqlDataAdapter("DELETE FROM product WHERE id = " + product_id, db.getConnection());
-            DataTable dt = new DataTable();
-            adapter.Fill(dt);
-            db.closeConnection();
-            updateGridProduct();
+            if (dataGridView1.RowCount > 0)
+            {
+                int product_id = Convert.ToInt32(dataGridView1[0, dataGridView1.CurrentRow.Index].Value.ToString());
+                db.openConnection();
+                MySqlDataAdapter adapter = new MySqlDataAdapter("DELETE FROM product WHERE id = " + product_id, db.getConnection());
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                db.closeConnection();
+                updateGridProduct();
+            }
         }
 
         private void button2_Click(object sender, EventArgs e) //добавление пользователя
@@ -282,13 +285,16 @@ namespace WindowsFormsApp1
 
         private void button7_Click(object sender, EventArgs e) //удаление пользователя
         {
-            int customer_id = Convert.ToInt32(dataGridView2[0, dataGridView2.CurrentRow.Index].Value.ToString());
-            db.openConnection();
-            MySqlDataAdapter adapter = new MySqlDataAdapter("DELETE FROM customers WHERE id = " + customer_id, db.getConnection());
-            DataTable dt = new DataTable();
-            adapter.Fill(dt);
-            db.closeConnection();
-            updateGridCustomers();
+            if (dataGridView2.RowCount > 0)
+            {
+                int customer_id = Convert.ToInt32(dataGridView2[0, dataGridView2.CurrentRow.Index].Value.ToString());
+                db.openConnection();
+                MySqlDataAdapter adapter = new MySqlDataAdapter("DELETE FROM customers WHERE id = " + customer_id, db.getConnection());
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                db.closeConnection();
+                updateGridCustomers();
+            }
         }
 
         private void numberCheck(object sender, KeyPressEventArgs e) //ввод только числовых значений
@@ -366,31 +372,37 @@ namespace WindowsFormsApp1
 
         private void button3_Click(object sender, EventArgs e) //добавление в корзину
         {
-            db.openConnection();
-            MySqlCommand command = new MySqlCommand("SELECT * FROM product WHERE product_name = '" + comboBox1.Text + "'", db.getConnection());
-            MySqlDataReader dr = command.ExecuteReader();
-            dr.Read();
-            int rowNumber = dataGridView3.Rows.Add();
-            dataGridView3.Rows[rowNumber].Cells[0].Value = dr.GetValue(0);
-            dataGridView3.Rows[rowNumber].Cells[1].Value = dr.GetValue(1);
-            dataGridView3.Rows[rowNumber].Cells[2].Value = dr.GetValue(2);
-            dataGridView3.Rows[rowNumber].Cells[3].Value = numericUpDown1.Value;
-            dataGridView3.Rows[rowNumber].Cells[4].Value = (Convert.ToInt32(dr.GetValue(2)) * numericUpDown1.Value);
-            db.closeConnection();
-            int sum = 0;
-            for (int i = 0; i < dataGridView3.Rows.Count; ++i)
+            if (dataGridView3.RowCount > 0)
             {
-                sum += Convert.ToInt32(dataGridView3.Rows[i].Cells[4].Value);
+                db.openConnection();
+                MySqlCommand command = new MySqlCommand("SELECT * FROM product WHERE product_name = '" + comboBox1.Text + "'", db.getConnection());
+                MySqlDataReader dr = command.ExecuteReader();
+                dr.Read();
+                int rowNumber = dataGridView3.Rows.Add();
+                dataGridView3.Rows[rowNumber].Cells[0].Value = dr.GetValue(0);
+                dataGridView3.Rows[rowNumber].Cells[1].Value = dr.GetValue(1);
+                dataGridView3.Rows[rowNumber].Cells[2].Value = dr.GetValue(2);
+                dataGridView3.Rows[rowNumber].Cells[3].Value = numericUpDown1.Value;
+                dataGridView3.Rows[rowNumber].Cells[4].Value = (Convert.ToInt32(dr.GetValue(2)) * numericUpDown1.Value);
+                db.closeConnection();
+                int sum = 0;
+                for (int i = 0; i < dataGridView3.Rows.Count; ++i)
+                {
+                    sum += Convert.ToInt32(dataGridView3.Rows[i].Cells[4].Value);
+                }
+                textBox9.Text = sum.ToString();
             }
-            textBox9.Text = sum.ToString();
         }
 
         private void button5_Click(object sender, EventArgs e) //удаление корзины
         {
-            dataGridView3.Rows.RemoveAt(dataGridView3.CurrentRow.Index);
-            int sum = Convert.ToInt32(textBox9.Text);
-            sum -= Convert.ToInt32(dataGridView3.CurrentRow.Cells[4].Value);
-            textBox9.Text = sum.ToString();
+            if (dataGridView3.RowCount > 0)
+            {
+                dataGridView3.Rows.RemoveAt(dataGridView3.CurrentRow.Index);
+                int sum = Convert.ToInt32(textBox9.Text);
+                sum -= Convert.ToInt32(dataGridView3.CurrentRow.Cells[4].Value);
+                textBox9.Text = sum.ToString();
+            }
         }
 
         private void button13_Click(object sender, EventArgs e) //оплата
@@ -637,75 +649,98 @@ namespace WindowsFormsApp1
 
         private void button10_Click(object sender, EventArgs e)
         {
-            int invoice_id = Convert.ToInt32(dataGridView4[0, dataGridView4.CurrentRow.Index].Value.ToString());
-            db.openConnection();
-            MySqlCommand command = new MySqlCommand("DELETE FROM invoice WHERE id = " + invoice_id, db.getConnection());
-            command.ExecuteNonQuery();
-            db.closeConnection();
-            textBox10.Text = string.Empty;
-            textBox11.Text = string.Empty;
-            textBox16.Text = string.Empty;
-            updateGridInvoice();
+            if (dataGridView4.RowCount > 0)
+            {
+                int invoice_id = Convert.ToInt32(dataGridView4[0, dataGridView4.CurrentRow.Index].Value.ToString());
+                db.openConnection();
+                MySqlCommand command = new MySqlCommand("DELETE FROM invoice WHERE id = " + invoice_id, db.getConnection());
+                command.ExecuteNonQuery();
+                db.closeConnection();
+                textBox10.Text = string.Empty;
+                textBox11.Text = string.Empty;
+                textBox16.Text = string.Empty;
+                updateGridInvoice();
+            }
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            int invoice_id = Convert.ToInt32(dataGridView4[0, dataGridView4.CurrentRow.Index].Value.ToString());
-            db.openConnection();
-            MySqlCommand command = new MySqlCommand("SELECT * FROM invoice  WHERE id = " + invoice_id, db.getConnection());
-            MySqlDataReader reader = command.ExecuteReader();
-            
-            while (reader.Read())
+            if (dataGridView4.RowCount > 0)
             {
-                string filename = reader.GetString(4);
-                byte[] data = (byte[])reader.GetValue(5);
-                SaveFileDialog saveFileDialog = new SaveFileDialog
+                int invoice_id = Convert.ToInt32(dataGridView4[0, dataGridView4.CurrentRow.Index].Value.ToString());
+                db.openConnection();
+                MySqlCommand command = new MySqlCommand("SELECT * FROM invoice  WHERE id = " + invoice_id, db.getConnection());
+                MySqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
                 {
-                    FileName = filename.ToString(),
-                    Filter = "PDF документ(*.pdf)|*.pdf",
-                    DefaultExt = ".pdf",
-                    InitialDirectory = @".\PDFs\"
-                };
-                saveFileDialog.ShowDialog();
-                string filepath = saveFileDialog.FileName;
-                File.WriteAllBytes(filepath, data);
+                    string filename = reader.GetString(4);
+                    byte[] data = (byte[])reader.GetValue(5);
+                    SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        FileName = filename.ToString(),
+                        Filter = "PDF документ(*.pdf)|*.pdf",
+                        DefaultExt = ".pdf",
+                        InitialDirectory = @".\PDFs\"
+                    };
+                    saveFileDialog.ShowDialog();
+                    string filepath = saveFileDialog.FileName;
+                    File.WriteAllBytes(filepath, data);
+                }
+                db.closeConnection();
             }
-            db.closeConnection();
         }
 
         private void button14_Click(object sender, EventArgs e)
         {
-            int waybill_id = Convert.ToInt32(dataGridView5[0, dataGridView5.CurrentRow.Index].Value.ToString());
-            db.openConnection();
-            MySqlCommand command = new MySqlCommand("DELETE FROM waybill WHERE id = " + waybill_id, db.getConnection());
-            command.ExecuteNonQuery();
-            db.closeConnection();
-            updateGridWayBill();
+            if (dataGridView5.RowCount > 0)
+            {
+                int waybill_id = Convert.ToInt32(dataGridView5[0, dataGridView5.CurrentRow.Index].Value.ToString());
+                db.openConnection();
+                MySqlCommand command = new MySqlCommand("DELETE FROM waybill WHERE id = " + waybill_id, db.getConnection());
+                command.ExecuteNonQuery();
+                db.closeConnection();
+                updateGridWayBill();
+            }
         }
 
         private void button11_Click(object sender, EventArgs e)
         {
-            int waybill_id = Convert.ToInt32(dataGridView5[0, dataGridView5.CurrentRow.Index].Value.ToString());
-            db.openConnection();
-            MySqlCommand command = new MySqlCommand("SELECT * FROM waybill  WHERE id = " + waybill_id, db.getConnection());
-            MySqlDataReader reader = command.ExecuteReader();
-
-            while (reader.Read())
+            if (dataGridView5.RowCount > 0)
             {
-                string filename = reader.GetString(3);
-                byte[] data = (byte[])reader.GetValue(4);
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    FileName = filename.ToString(),
-                    Filter = "PDF документ(*.pdf)|*.pdf",
-                    DefaultExt = ".pdf",
-                    InitialDirectory = @".\PDFs\"
-                };
-                saveFileDialog.ShowDialog();
-                string filepath = saveFileDialog.FileName;
+                int waybill_id = Convert.ToInt32(dataGridView5[0, dataGridView5.CurrentRow.Index].Value.ToString());
+                db.openConnection();
+                MySqlCommand command = new MySqlCommand("SELECT * FROM waybill  WHERE id = " + waybill_id, db.getConnection());
+                MySqlDataReader reader = command.ExecuteReader();
 
-                File.WriteAllBytes(filepath, data);
+                while (reader.Read())
+                {
+                    string filename = reader.GetString(3);
+                    byte[] data = (byte[])reader.GetValue(4);
+                    SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        FileName = filename.ToString(),
+                        Filter = "PDF документ(*.pdf)|*.pdf",
+                        DefaultExt = ".pdf",
+                        InitialDirectory = @".\PDFs\"
+                    };
+                    saveFileDialog.ShowDialog();
+                    string filepath = saveFileDialog.FileName;
+
+                    File.WriteAllBytes(filepath, data);
+                }
+                db.closeConnection();
             }
+        }
+
+        private void dataGridView5_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int bill_id = Convert.ToInt32(dataGridView5[0, dataGridView5.CurrentRow.Index].Value.ToString());
+            db.openConnection();
+            MySqlCommand command = new MySqlCommand("SELECT `customer` FROM `waybill` WHERE id = '" + bill_id + "'", db.getConnection());
+            textBox21.Text = command.ExecuteScalar().ToString();
+            MySqlCommand command2 = new MySqlCommand("SELECT `time` FROM `waybill` WHERE id = '" + bill_id + "'", db.getConnection());
+            textBox22.Text = command2.ExecuteScalar().ToString();
             db.closeConnection();
         }
     }
